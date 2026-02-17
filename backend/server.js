@@ -10,6 +10,9 @@ const vendorRoutes = require('./routes/vendorRoutes');
 const userRoutes   = require('./routes/userRoutes');
 
 const app = express();
+// Serve frontend folder
+app.use(express.static(path.join(__dirname, "../frontend")));
+
 connectDB();
 
 // Middleware
@@ -51,3 +54,7 @@ app.use((req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/pages/index.html"));
+});
+
