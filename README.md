@@ -203,6 +203,15 @@ START → INDEX
 
 ---
 
+##Screenshots
+![Home Page]{<img width="1918" height="878" alt="image" src="https://github.com/user-attachments/assets/abbb27ed-1165-4bc1-ae4a-34c032374cdd" />
+}
+![Admin Dashboard]{<img width="1919" height="930" alt="Screenshot 2026-02-17 230251" src="https://github.com/user-attachments/assets/bc920a6d-72bc-493c-a5af-bcca2ca10537" />
+}
+![User Dashboard]{<img width="1919" height="879" alt="Screenshot 2026-02-17 231006" src="https://github.com/user-attachments/assets/e89ee257-8c47-44fa-a7bf-b739e20a7bf9" />
+}
+![user Requests]{<img width="1918" height="925" alt="image" src="https://github.com/user-attachments/assets/e413ab1a-7eee-4fe1-bd58-c0253ab2c4bb" />
+}
 ## License
 
 This project is for educational/demo purposes.
