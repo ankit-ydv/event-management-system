@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Portal — Event Management</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <span class="brand">🎉 Event Management</span>
+    <nav>
+      <a href="user-portal.html">Vendor</a>
+      <a href="cart.html">Cart</a>
+      <a href="guest-list.html">Guest List</a>
+      <a href="order-status.html">Order Status</a>
+    </nav>
+    <button class="btn-logout" onclick="logout('user')">Log Out</button>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <h2>WELCOME USER — Browse by Category</h2>
+      <div class="flex-gap mb-2">
+        <button class="btn btn-outline btn-sm" onclick="loadVendors('')">All</button>
+        <button class="btn btn-outline btn-sm" onclick="loadVendors('Catering')">🍽 Catering</button>
+        <button class="btn btn-outline btn-sm" onclick="loadVendors('Florist')">🌸 Florist</button>
+        <button class="btn btn-outline btn-sm" onclick="loadVendors('Decoration')">🎊 Decoration</button>
+        <button class="btn btn-outline btn-sm" onclick="loadVendors('Lighting')">💡 Lighting</button>
+      </div>
+      <div id="alert-box"></div>
+      <div class="grid-4" id="vendorList">
+        <p class="text-muted">Loading vendors...</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+    async function loadVendors(category) {
+      const url = category ? `/api/user/vendors?category=${category}` : '/api/user/vendors';
+      const vendors = await api.get(url);
+      if (vendors.message) { window.location.href = 'user-login.html'; return; }
+      const list = document.getElementById('vendorList');
+      if (!vendors.length) { list.innerHTML = '<p class="text-muted">No vendors found.</p>'; return; }
+      list.innerHTML = vendors.map(v => `
+        <div class="vendor-card">
+          <div class="vc-name">${v.name}</div>
+          <div class="vc-cat"><span class="badge badge-blue">${v.category}</span></div>
+          <p class="text-muted mb-1" style="font-size:.85rem">${v.contactDetails || 'Contact details not provided'}</p>
+          <a href="vendor-page.html?id=${v._id}" class="btn btn-primary btn-sm btn-full">Shop Items</a>
+        </div>
+      `).join('');
+    }
+    loadVendors('');
+  </script>
+</body>
+</html>

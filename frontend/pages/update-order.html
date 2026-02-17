@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Update Order Status — Vendor</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <span class="brand">🏪 Event Management</span>
+    <nav>
+      <a href="vendor-dashboard.html">Home</a>
+      <a href="vendor-add-item.html">Add Item</a>
+      <a href="update-order.html">Transactions</a>
+    </nav>
+    <button class="btn-logout" onclick="logout('vendor')">Log Out</button>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <h2>🚚 Order Transactions &amp; Status Update</h2>
+      <div id="alert-box"></div>
+
+      <div class="mb-2">
+        <p class="text-muted">Update the delivery status of orders. State will change once you save.</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Current Status</th><th>Update</th></tr>
+          </thead>
+          <tbody id="orderBody">
+            <tr><td colspan="6" class="text-muted text-center">Loading orders...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+    const STATUSES = ['Received', 'Ready for Shipping', 'Out for Delivery', 'Delivered'];
+
+    async function loadOrders() {
+      const orders = await api.get('/api/vendor/orders');
+      if (orders.message) { window.location.href = 'vendor-login.html'; return; }
+      const tbody = document.getElementById('orderBody');
+      if (!orders.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-muted text-center">No orders yet.</td></tr>'; return;
+      }
+      tbody.innerHTML = orders.map(o => `
+        <tr>
+          <td style="font-size:.8rem;color:var(--muted)">${o._id}</td>
+          <td>${o.user?.name || '—'}<br><small>${o.user?.email || ''}</small></td>
+          <td>${o.items.map(i => `${i.name} ×${i.quantity}`).join(', ')}</td>
+          <td>${fmt(o.totalAmount)}</td>
+          <td>${statusBadge(o.status)}</td>
+          <td>
+            <div class="flex-gap">
+              <select id="status_${o._id}">
+                ${STATUSES.map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+              </select>
+              <button class="btn btn-primary btn-sm" onclick="updateStatus('${o._id}')">Update</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function updateStatus(orderId) {
+      const status = document.getElementById(`status_${orderId}`).value;
+      const res = await api.put(`/api/vendor/orders/${orderId}/status`, { status });
+      showAlert(res.message, 'success');
+      loadOrders();
+    }
+
+    loadOrders();
+  </script>
+</body>
+</html>

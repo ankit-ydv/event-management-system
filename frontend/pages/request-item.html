@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Request Item — Event Management</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <span class="brand">🏪 Event Management</span>
+    <nav>
+      <a href="vendor-dashboard.html">Home</a>
+      <a href="update-order.html">Transactions</a>
+    </nav>
+    <button class="btn-logout" onclick="logout('vendor')">Log Out</button>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <h2>📋 Request Item — User Requests</h2>
+      <p class="text-muted mb-2">Items requested by users that are not currently in the catalog.</p>
+      <div id="alert-box"></div>
+
+      <!-- Placeholder content — in a full build, this would be a RequestItem model -->
+      <div class="grid-3">
+        <div class="card" style="background:#f8fafc;text-align:center">
+          <div style="font-size:2rem">📦</div>
+          <div style="font-weight:700;margin:.5rem 0">Item 1</div>
+          <p class="text-muted">Requested by: User</p>
+          <span class="badge badge-yellow">Pending</span>
+        </div>
+        <div class="card" style="background:#f8fafc;text-align:center">
+          <div style="font-size:2rem">📦</div>
+          <div style="font-weight:700;margin:.5rem 0">Item 2</div>
+          <p class="text-muted">Requested by: User</p>
+          <span class="badge badge-yellow">Pending</span>
+        </div>
+        <div class="card" style="background:#f8fafc;text-align:center">
+          <div style="font-size:2rem">📦</div>
+          <div style="font-weight:700;margin:.5rem 0">Item 3</div>
+          <p class="text-muted">Requested by: User</p>
+          <span class="badge badge-blue">In Review</span>
+        </div>
+        <div class="card" style="background:#f8fafc;text-align:center">
+          <div style="font-size:2rem">📦</div>
+          <div style="font-weight:700;margin:.5rem 0">Item 4</div>
+          <p class="text-muted">Requested by: User</p>
+          <span class="badge badge-green">Fulfilled</span>
+        </div>
+      </div>
+
+      <div class="mt-2">
+        <a href="vendor-add-item.html" class="btn btn-primary">+ Add Requested Item to Catalog</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

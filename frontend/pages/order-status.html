@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Status — Event Management</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <span class="brand">🎉 Event Management</span>
+    <nav>
+      <a href="user-portal.html">Home</a>
+      <a href="cart.html">Cart</a>
+    </nav>
+    <button class="btn-logout" onclick="logout('user')">Log Out</button>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <h2>📦 User Order Status</h2>
+      <div id="alert-box"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Order ID</th><th>Name</th><th>Email</th><th>Address</th><th>Amount</th><th>Status</th></tr>
+          </thead>
+          <tbody id="orderBody">
+            <tr><td colspan="6" class="text-muted text-center">Loading orders...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+    async function loadOrders() {
+      const orders = await api.get('/api/user/orders');
+      if (orders.message) { window.location.href = 'user-login.html'; return; }
+      const tbody = document.getElementById('orderBody');
+      if (!orders.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-muted text-center">No orders yet.</td></tr>'; return;
+      }
+      tbody.innerHTML = orders.map(o => `
+        <tr>
+          <td style="font-size:.8rem;color:var(--muted)">${o._id}</td>
+          <td>${o.name}</td>
+          <td>${o.email}</td>
+          <td>${o.address}, ${o.city}, ${o.state}</td>
+          <td>${fmt(o.totalAmount)}</td>
+          <td>${statusBadge(o.status)}</td>
+        </tr>
+      `).join('');
+    }
+    loadOrders();
+  </script>
+</body>
+</html>

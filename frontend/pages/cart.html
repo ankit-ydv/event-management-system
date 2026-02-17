@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shopping Cart — Event Management</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <span class="brand">🎉 Event Management</span>
+    <nav>
+      <a href="user-portal.html">Home</a>
+      <a href="vendor-page.html">View Products</a>
+      <a href="request-item.html">Request Item</a>
+      <a href="product-status.html">Product Status</a>
+    </nav>
+    <button class="btn-logout" onclick="logout('user')">Log Out</button>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <h2>🛒 Shopping Cart</h2>
+      <div id="alert-box"></div>
+      <div class="table-wrap">
+        <table id="cartTable">
+          <thead>
+            <tr>
+              <th>Image</th><th>Name</th><th>Price</th><th>Quantity</th><th>Total</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="cartBody">
+            <tr><td colspan="6" class="text-muted text-center">Loading cart...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex-between mt-2">
+        <div>
+          <strong>Grand Total: </strong>
+          <span id="grandTotal" style="font-size:1.2rem;color:var(--primary);font-weight:700">Rs/0/-</span>
+        </div>
+        <div class="flex-gap">
+          <button class="btn btn-danger btn-sm" onclick="clearCart()">Delete All</button>
+          <a href="checkout.html" class="btn btn-primary">Proceed to Checkout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+    async function loadCart() {
+      const data = await api.get('/api/user/cart');
+      if (data.message === 'Unauthorized. Please log in.') { window.location.href = 'user-login.html'; return; }
+      const tbody = document.getElementById('cartBody');
+      document.getElementById('grandTotal').textContent = fmt(data.grandTotal || 0);
+      if (!data.items || !data.items.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-muted text-center">Your cart is empty.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.items.map(item => `
+        <tr>
+          <td>${item.product?.image ? `<img src="/uploads/${item.product.image}" style="width:50px;height:50px;object-fit:cover;border-radius:6px" />` : '—'}</td>
+          <td>${item.product?.name || 'Product'}</td>
+          <td>${fmt(item.price)}</td>
+          <td>
+            <div class="flex-gap">
+              <button class="btn btn-outline btn-sm" onclick="changeQty('${item.product?._id}', ${item.quantity - 1})">−</button>
+              <span>${item.quantity}</span>
+              <button class="btn btn-outline btn-sm" onclick="changeQty('${item.product?._id}', ${item.quantity + 1})">+</button>
+            </div>
+          </td>
+          <td>${fmt(item.price * item.quantity)}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="removeItem('${item.product?._id}')">Remove</button></td>
+        </tr>
+      `).join('');
+    }
+
+    async function changeQty(productId, qty) {
+      if (qty < 1) return removeItem(productId);
+      await api.put(`/api/user/cart/${productId}`, { quantity: qty });
+      loadCart();
+    }
+
+    async function removeItem(productId) {
+      await api.del(`/api/user/cart/${productId}`);
+      loadCart();
+    }
+
+    async function clearCart() {
+      if (!confirm('Clear entire cart?')) return;
+      await api.del('/api/user/cart');
+      loadCart();
+    }
+
+    loadCart();
+  </script>
+</body>
+</html>

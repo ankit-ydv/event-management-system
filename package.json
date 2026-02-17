@@ -1,0 +1,25 @@
+{
+  "name": "event-management-system",
+  "version": "1.0.0",
+  "description": "A full-stack Event Management System with Admin, Vendor and User roles",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "connect-flash": "^0.1.1",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "mongoose": "^7.3.1",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": ["event-management", "nodejs", "express", "mongodb"],
+  "author": "",
+  "license": "ISC"
+}

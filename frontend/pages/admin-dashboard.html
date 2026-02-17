@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — Event Management</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <span class="brand">🔐 Event Management — Admin</span>
+    <nav>
+      <a href="admin-dashboard.html">Home</a>
+      <a href="maintain-user.html">Maintain User</a>
+      <a href="maintain-vendor.html">Maintain Vendor</a>
+    </nav>
+    <button class="btn-logout" onclick="logout('admin')">Log Out</button>
+  </nav>
+
+  <div class="container">
+    <!-- Stats Row -->
+    <div class="grid-3 mb-2" id="statsRow">
+      <div class="card text-center">
+        <div style="font-size:2.5rem;margin-bottom:.3rem">👥</div>
+        <div style="font-size:1.8rem;font-weight:700;color:var(--primary)" id="userCount">—</div>
+        <div class="text-muted">Total Users</div>
+      </div>
+      <div class="card text-center">
+        <div style="font-size:2.5rem;margin-bottom:.3rem">🏪</div>
+        <div style="font-size:1.8rem;font-weight:700;color:var(--accent)" id="vendorCount">—</div>
+        <div class="text-muted">Total Vendors</div>
+      </div>
+      <div class="card text-center">
+        <div style="font-size:2.5rem;margin-bottom:.3rem">⚙️</div>
+        <div style="font-size:1.8rem;font-weight:700;color:var(--success)">Admin</div>
+        <div class="text-muted">Access Level</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Welcome Admin — Maintenance Menu</h2>
+      <p class="text-muted mb-2">Admin has exclusive access to the maintenance module, reports, and transactions.</p>
+      <div class="grid-2">
+        <a href="maintain-user.html" class="btn btn-primary">👥 Maintain Users</a>
+        <a href="maintain-vendor.html" class="btn btn-outline">🏪 Maintain Vendors</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+    async function loadStats() {
+      const [users, vendors] = await Promise.all([
+        api.get('/api/admin/users'),
+        api.get('/api/admin/vendors')
+      ]);
+      if (users.message === 'Unauthorized. Please log in.') {
+        window.location.href = 'admin-login.html'; return;
+      }
+      document.getElementById('userCount').textContent   = users.length   || 0;
+      document.getElementById('vendorCount').textContent = vendors.length || 0;
+    }
+    loadStats();
+  </script>
+</body>
+</html>

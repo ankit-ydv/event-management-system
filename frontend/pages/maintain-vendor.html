@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maintain Vendor — Admin</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <span class="brand">🔐 Event Management — Admin</span>
+    <nav>
+      <a href="admin-dashboard.html">Home</a>
+      <a href="maintain-user.html">Maintain User</a>
+      <a href="maintain-vendor.html">Maintain Vendor</a>
+    </nav>
+    <button class="btn-logout" onclick="logout('admin')">Log Out</button>
+  </nav>
+
+  <div class="container">
+    <div class="grid-2">
+      <!-- Add / Edit Vendor -->
+      <div class="card">
+        <h2 id="formTitle">Add Vendor</h2>
+        <div id="alert-box"></div>
+        <form id="vendorForm">
+          <input type="hidden" id="editVendorId" />
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="vName" placeholder="Vendor's name" required />
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="vEmail" placeholder="Vendor's email" required />
+          </div>
+          <div class="form-group" id="passwordGroup">
+            <label>Password</label>
+            <input type="password" id="vPassword" placeholder="Set password" />
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="vCategory" required>
+              <option value="">— Select Category —</option>
+              <option value="Catering">Catering</option>
+              <option value="Florist">Florist</option>
+              <option value="Decoration">Decoration</option>
+              <option value="Lighting">Lighting</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Contact Details</label>
+            <input type="text" id="vContact" placeholder="Phone / address" />
+          </div>
+          <div class="flex-gap">
+            <button type="submit" class="btn btn-primary" id="formBtn">Add Vendor</button>
+            <button type="button" class="btn btn-outline hidden" id="cancelBtn" onclick="resetForm()">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Vendor List -->
+      <div class="card">
+        <h2>Vendor Management</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Category</th><th>Email</th><th>Actions</th></tr></thead>
+            <tbody id="vendorTable">
+              <tr><td colspan="4" class="text-muted text-center">Loading vendors...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+    let vendors = [];
+
+    async function loadVendors() {
+      vendors = await api.get('/api/admin/vendors');
+      if (vendors.message) { window.location.href = 'admin-login.html'; return; }
+      const tbody = document.getElementById('vendorTable');
+      if (!vendors.length) { tbody.innerHTML = '<tr><td colspan="4" class="text-muted text-center">No vendors found.</td></tr>'; return; }
+      tbody.innerHTML = vendors.map(v => `
+        <tr>
+          <td>${v.name}</td>
+          <td><span class="badge badge-blue">${v.category}</span></td>
+          <td>${v.email}</td>
+          <td class="flex-gap">
+            <button class="btn btn-outline btn-sm" onclick="editVendor('${v._id}')">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteVendor('${v._id}')">Delete</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function editVendor(id) {
+      const v = vendors.find(x => x._id === id);
+      if (!v) return;
+      document.getElementById('editVendorId').value = id;
+      document.getElementById('vName').value        = v.name;
+      document.getElementById('vEmail').value       = v.email;
+      document.getElementById('vCategory').value    = v.category;
+      document.getElementById('vContact').value     = v.contactDetails || '';
+      document.getElementById('formTitle').textContent = 'Update Vendor';
+      document.getElementById('formBtn').textContent   = 'Update Vendor';
+      document.getElementById('passwordGroup').style.display = 'none';
+      document.getElementById('cancelBtn').classList.remove('hidden');
+    }
+
+    function resetForm() {
+      document.getElementById('vendorForm').reset();
+      document.getElementById('editVendorId').value = '';
+      document.getElementById('formTitle').textContent = 'Add Vendor';
+      document.getElementById('formBtn').textContent   = 'Add Vendor';
+      document.getElementById('passwordGroup').style.display = '';
+      document.getElementById('cancelBtn').classList.add('hidden');
+    }
+
+    document.getElementById('vendorForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id       = document.getElementById('editVendorId').value;
+      const name     = document.getElementById('vName').value.trim();
+      const email    = document.getElementById('vEmail').value.trim();
+      const password = document.getElementById('vPassword').value;
+      const category = document.getElementById('vCategory').value;
+      const contactDetails = document.getElementById('vContact').value.trim();
+
+      if (id) {
+        const res = await api.put(`/api/admin/vendors/${id}`, { name, email, category, contactDetails });
+        showAlert(res.message, 'success');
+      } else {
+        if (!password) return showAlert('Password is required for new vendor.');
+        const res = await api.post('/api/admin/vendors', { name, email, password, category, contactDetails });
+        showAlert(res.message, res.message.includes('added') ? 'success' : 'error');
+      }
+      resetForm();
+      loadVendors();
+    });
+
+    async function deleteVendor(id) {
+      if (!confirm('Delete this vendor?')) return;
+      const res = await api.del(`/api/admin/vendors/${id}`);
+      showAlert(res.message, 'success');
+      loadVendors();
+    }
+
+    loadVendors();
+  </script>
+</body>
+</html>

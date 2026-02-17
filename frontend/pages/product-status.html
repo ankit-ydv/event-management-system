@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Status — Vendor</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <span class="brand">🏪 Event Management</span>
+    <nav>
+      <a href="vendor-dashboard.html">Home</a>
+      <a href="update-order.html">Transactions</a>
+    </nav>
+    <button class="btn-logout" onclick="logout('vendor')">Log Out</button>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <h2>📦 Product Status</h2>
+      <div id="alert-box"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Image</th><th>Name</th><th>Price</th><th>Email</th><th>Address</th><th>Status</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="statusBody">
+            <tr><td colspan="7" class="text-muted text-center">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+    async function loadStatus() {
+      const [products, orders] = await Promise.all([
+        api.get('/api/vendor/products'),
+        api.get('/api/vendor/orders')
+      ]);
+      if (products.message) { window.location.href = 'vendor-login.html'; return; }
+
+      const tbody = document.getElementById('statusBody');
+      if (!products.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-center">No products found.</td></tr>'; return;
+      }
+      tbody.innerHTML = products.map(p => {
+        // Find most recent order containing this product
+        const relatedOrders = orders.filter(o => o.items.some(i => i.product === p._id || i.product?._id === p._id));
+        const latest = relatedOrders[0];
+        return `
+          <tr>
+            <td>${p.image ? `<img src="/uploads/${p.image}" style="width:48px;height:48px;object-fit:cover;border-radius:6px"/>` : '—'}</td>
+            <td>${p.name}</td>
+            <td>${fmt(p.price)}</td>
+            <td>${latest?.email || '—'}</td>
+            <td>${latest ? `${latest.address}, ${latest.city}` : '—'}</td>
+            <td>${latest ? statusBadge(latest.status) : '<span class="badge badge-blue">No Orders</span>'}</td>
+            <td>
+              <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p._id}')">Delete</button>
+              <a href="vendor-dashboard.html" class="btn btn-outline btn-sm">Update</a>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Delete this product?')) return;
+      const res = await api.del(`/api/vendor/products/${id}`);
+      showAlert(res.message, 'success');
+      loadStatus();
+    }
+
+    loadStatus();
+  </script>
+</body>
+</html>

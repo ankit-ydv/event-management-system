@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vendor Products — Event Management</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <span class="brand">🎉 Event Management</span>
+    <nav>
+      <a href="user-portal.html">Home</a>
+      <a href="cart.html">🛒 Cart</a>
+    </nav>
+    <button class="btn-logout" onclick="logout('user')">Log Out</button>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <h2 id="vendorTitle">Products</h2>
+      <div id="alert-box"></div>
+      <div class="grid-4" id="productList">
+        <p class="text-muted">Loading products...</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+    const params   = new URLSearchParams(location.search);
+    const vendorId = params.get('id');
+
+    async function loadProducts() {
+      if (!vendorId) { window.location.href = 'user-portal.html'; return; }
+      const products = await api.get(`/api/user/vendors/${vendorId}/products`);
+      if (products.message) { window.location.href = 'user-login.html'; return; }
+      const list = document.getElementById('productList');
+      if (!products.length) { list.innerHTML = '<p class="text-muted">No products available.</p>'; return; }
+      list.innerHTML = products.map(p => `
+        <div class="product-card">
+          ${p.image ? `<img src="/uploads/${p.image}" alt="${p.name}" />` : '<div class="img-placeholder">No Image</div>'}
+          <div class="pc-body">
+            <div class="pc-name">${p.name}</div>
+            <div class="pc-price">${fmt(p.price)}</div>
+            <div class="pc-actions">
+              <button class="btn btn-primary btn-sm btn-full" onclick="addToCart('${p._id}')">Add to Cart</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function addToCart(productId) {
+      const res = await api.post('/api/user/cart', { productId, quantity: 1 });
+      showAlert(res.message === 'Item added to cart.' ? 'Added to cart!' : res.message,
+                res.message === 'Item added to cart.' ? 'success' : 'error');
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>

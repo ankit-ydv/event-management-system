@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maintain User — Admin</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <span class="brand">🔐 Event Management — Admin</span>
+    <nav>
+      <a href="admin-dashboard.html">Home</a>
+      <a href="maintain-user.html">Maintain User</a>
+      <a href="maintain-vendor.html">Maintain Vendor</a>
+    </nav>
+    <button class="btn-logout" onclick="logout('admin')">Log Out</button>
+  </nav>
+
+  <div class="container">
+    <div class="grid-2">
+      <!-- Add / Edit User -->
+      <div class="card">
+        <h2 id="formTitle">Add User</h2>
+        <div id="alert-box"></div>
+        <form id="userForm">
+          <input type="hidden" id="editUserId" />
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="uName" placeholder="User's name" required />
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="uEmail" placeholder="User's email" required />
+          </div>
+          <div class="form-group" id="passwordGroup">
+            <label>Password</label>
+            <input type="password" id="uPassword" placeholder="Set password" />
+          </div>
+          <div class="flex-gap">
+            <button type="submit" class="btn btn-primary" id="formBtn">Add User</button>
+            <button type="button" class="btn btn-outline hidden" id="cancelBtn" onclick="resetForm()">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- User List -->
+      <div class="card">
+        <h2>User Management</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Actions</th></tr></thead>
+            <tbody id="userTable">
+              <tr><td colspan="3" class="text-muted text-center">Loading users...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+    let users = [];
+
+    async function loadUsers() {
+      users = await api.get('/api/admin/users');
+      if (users.message) { window.location.href = 'admin-login.html'; return; }
+      const tbody = document.getElementById('userTable');
+      if (!users.length) { tbody.innerHTML = '<tr><td colspan="3" class="text-muted text-center">No users found.</td></tr>'; return; }
+      tbody.innerHTML = users.map(u => `
+        <tr>
+          <td>${u.name}</td>
+          <td>${u.email}</td>
+          <td class="flex-gap">
+            <button class="btn btn-outline btn-sm" onclick="editUser('${u._id}')">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteUser('${u._id}')">Delete</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function editUser(id) {
+      const u = users.find(x => x._id === id);
+      if (!u) return;
+      document.getElementById('editUserId').value = id;
+      document.getElementById('uName').value      = u.name;
+      document.getElementById('uEmail').value     = u.email;
+      document.getElementById('formTitle').textContent = 'Update User';
+      document.getElementById('formBtn').textContent   = 'Update User';
+      document.getElementById('passwordGroup').style.display = 'none';
+      document.getElementById('cancelBtn').classList.remove('hidden');
+    }
+
+    function resetForm() {
+      document.getElementById('userForm').reset();
+      document.getElementById('editUserId').value = '';
+      document.getElementById('formTitle').textContent = 'Add User';
+      document.getElementById('formBtn').textContent   = 'Add User';
+      document.getElementById('passwordGroup').style.display = '';
+      document.getElementById('cancelBtn').classList.add('hidden');
+    }
+
+    document.getElementById('userForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id       = document.getElementById('editUserId').value;
+      const name     = document.getElementById('uName').value.trim();
+      const email    = document.getElementById('uEmail').value.trim();
+      const password = document.getElementById('uPassword').value;
+
+      if (id) {
+        // Update
+        const res = await api.put(`/api/admin/users/${id}`, { name, email });
+        showAlert(res.message, 'success');
+      } else {
+        // Add
+        if (!password) return showAlert('Password is required for new user.');
+        const res = await api.post('/api/admin/users', { name, email, password });
+        showAlert(res.message, res.message.includes('added') ? 'success' : 'error');
+      }
+      resetForm();
+      loadUsers();
+    });
+
+    async function deleteUser(id) {
+      if (!confirm('Delete this user?')) return;
+      const res = await api.del(`/api/admin/users/${id}`);
+      showAlert(res.message, 'success');
+      loadUsers();
+    }
+
+    loadUsers();
+  </script>
+</body>
+</html>

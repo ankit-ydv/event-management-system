@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Placed — Event Management</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body style="background:linear-gradient(135deg,#4f46e5,#7c3aed);min-height:100vh;display:flex;align-items:center;justify-content:center;">
+  <div class="card" style="max-width:480px;width:90%;text-align:center;">
+    <div style="font-size:4rem;margin-bottom:1rem;">✅</div>
+    <h2 style="color:var(--success);font-size:1.8rem;margin-bottom:.5rem;">THANK YOU!</h2>
+    <p class="text-muted mb-2">Your order has been placed successfully.</p>
+
+    <div id="orderDetails" style="text-align:left;background:#f8fafc;border-radius:8px;padding:1rem;margin-bottom:1.5rem;font-size:.92rem;"></div>
+
+    <a href="user-portal.html" class="btn btn-primary btn-full">Continue Shopping</a>
+    <div class="mt-2">
+      <a href="order-status.html" class="text-muted">Track your order →</a>
+    </div>
+  </div>
+
+  <script src="../js/main.js"></script>
+  <script>
+    const order = JSON.parse(sessionStorage.getItem('lastOrder') || '{}');
+    const el = document.getElementById('orderDetails');
+    if (order._id) {
+      el.innerHTML = `
+        <div class="flex-between mb-1"><span>Order ID</span><span>${order._id}</span></div>
+        <div class="flex-between mb-1"><span>Name</span><span>${order.name}</span></div>
+        <div class="flex-between mb-1"><span>Email</span><span>${order.email}</span></div>
+        <div class="flex-between mb-1"><span>Address</span><span>${order.address}, ${order.city}, ${order.state} - ${order.pinCode}</span></div>
+        <div class="flex-between mb-1"><span>Number</span><span>${order.phone}</span></div>
+        <div class="flex-between mb-1"><span>Payment Method</span><span>${order.paymentMethod}</span></div>
+        <hr style="border-color:var(--border);margin:.5rem 0"/>
+        <div class="flex-between"><strong>Total Amount</strong><strong style="color:var(--primary)">${fmt(order.totalAmount)}</strong></div>
+      `;
+    } else {
+      el.innerHTML = '<p class="text-muted text-center">Order details unavailable.</p>';
+    }
+    sessionStorage.removeItem('lastOrder');
+  </script>
+</body>
+</html>
